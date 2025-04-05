@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import '../models/nft_model.dart'; // Assurez-vous d'importer le modèle NFT
 
 class ApiService {
   final String baseUrl;
@@ -220,4 +221,91 @@ class ApiService {
       return false;
     }
   }
+
+  // Méthode pour récupérer les NFT d'un propriétaire (simulée)
+  Future<List<NFTModel>> getNFTsByOwner(String ownerAddress) async {
+    // En production, vous feriez ici un appel API à Metaplex ou à votre backend
+    // Pour l'exemple, nous retournons un NFT codé en dur basé sur l'exemple fourni
+
+    // Simuler un délai réseau
+    await Future.delayed(const Duration(seconds: 1));
+
+    // Données simulées pour plusieurs NFT
+    return [
+      NFTModel(
+        name: "Wild SOL NFT",
+        description: "This is an NFT to help wild animals on Solana",
+        imageUrl:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3qHVGtRWXsEgL-jnVAMbLh64IH9JZE2QQ0yMHWVdpPaf9lDwM9aAiUf_B7cUjCbSTrHm96PqkbgZcwVGR9z_tJA",
+        externalUrl: "https://wildsol.com",
+        attributes: [
+          NFTAttribute(traitType: "issuerID", value: "fdadf"),
+          NFTAttribute(traitType: "chipId", value: "xxxxxddddeee"),
+          NFTAttribute(traitType: "status", value: "alive"),
+        ],
+        status: "alive",
+        chipId: "xxxxxddddeee",
+      ),
+      NFTModel(
+        name: "Bengal Tiger #A2451",
+        description: "Protected Bengal Tiger in Ranthambore National Park",
+        imageUrl:
+            "https://images.unsplash.com/photo-1549366021-9f761d450615?q=80&w=1000&auto=format&fit=crop",
+        externalUrl: "https://wildsol.com",
+        attributes: [
+          NFTAttribute(traitType: "issuerID", value: "wlf-ind-045"),
+          NFTAttribute(traitType: "chipId", value: "bngl-2451-rfid"),
+          NFTAttribute(traitType: "status", value: "protected"),
+        ],
+        status: "protected",
+        chipId: "bngl-2451-rfid",
+      ),
+      NFTModel(
+        name: "African Elephant #E1123",
+        description: "Monitored elephant in Serengeti National Park",
+        imageUrl:
+            "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?q=80&w=1000&auto=format&fit=crop",
+        externalUrl: "https://wildsol.com",
+        attributes: [
+          NFTAttribute(traitType: "issuerID", value: "wlf-tnz-089"),
+          NFTAttribute(traitType: "chipId", value: "elph-1123-rfid"),
+          NFTAttribute(traitType: "status", value: "monitored"),
+        ],
+        status: "monitored",
+        chipId: "elph-1123-rfid",
+      ),
+    ];
+  }
+
+  // Exemple d'implémentation réelle d'appel API (commenté)
+  /*
+  Future<List<NFTModel>> getNFTsByOwnerReal(String ownerAddress) async {
+    try {
+      final url = Uri.parse('$baseUrl/nfts/$ownerAddress');
+      debugPrint('Fetching NFTs for owner: $ownerAddress');
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Request timed out');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> nftsJson = json.decode(response.body);
+        return nftsJson.map((nftJson) => NFTModel.fromJson(nftJson)).toList();
+      } else {
+        throw Exception('Failed to load NFTs: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching NFTs: $e');
+      rethrow;
+    }
+  }
+  */
 }

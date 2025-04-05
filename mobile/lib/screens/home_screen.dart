@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../services/api_service.dart';
+import '../services/api_service.dart';
+import '../models/nft_model.dart';
+import '../widgets/nft_card.dart';
 import 'scan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,13 +20,42 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Bottom navigation index
   int _selectedIndex = 0;
+  bool _isLoading = true;
+  List<NFTModel> _nfts = [];
+  final String _ownerAddress = 'bosq5LCREmQ4aiSwzYdvD7N1thoASZzHVqvCA1D2Cg5';
 
-  // Bottom navigation handler
+  @override
+  void initState() {
+    super.initState();
+    _loadNFTs();
+  }
+
+  Future<void> _loadNFTs() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final nfts = await widget.apiService.getNFTsByOwner(_ownerAddress);
+      setState(() {
+        _nfts = nfts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading NFTs: $e')),
+        );
+      }
+    }
+  }
+
   void _onItemTapped(int index) {
     if (index == 2) {
-      // Scan tab - navigate to VerificationScreen
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -57,52 +88,58 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Wallet Card
-              _buildWalletCard(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Wallet Card
+                _buildWalletCard(),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Platform Features
-              Text(
-                'WILD Platform Features',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+                // NFT Section
+                _buildNFTSection(),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 20),
 
-              // Feature Cards
-              _buildFeatureCard(
-                icon: Icons.pets,
-                title: 'KYA: Know Your Animal',
-                description:
-                    'AI-powered facial recognition for animal identity tracking',
-              ),
-              _buildFeatureCard(
-                icon: Icons.security,
-                title: 'Decentralized ID',
-                description:
-                    'Track life history and care records for animals on-chain',
-              ),
-              _buildFeatureCard(
-                icon: Icons.monetization_on,
-                title: 'Fundraising',
-                description:
-                    'One-click token launch for vets, NGOs, zoos, and sanctuaries',
-              ),
-            ],
+                // Platform Features
+                Text(
+                  'WILD Platform Features',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+
+                const SizedBox(height: 10),
+
+                // Feature Cards
+                _buildFeatureCard(
+                  icon: Icons.pets,
+                  title: 'KYA: Know Your Animal',
+                  description:
+                      'AI-powered facial recognition for animal identity tracking',
+                ),
+                _buildFeatureCard(
+                  icon: Icons.security,
+                  title: 'Decentralized ID',
+                  description:
+                      'Track life history and care records for animals on-chain',
+                ),
+                _buildFeatureCard(
+                  icon: Icons.monetization_on,
+                  title: 'Fundraising',
+                  description:
+                      'One-click token launch for vets, NGOs, zoos, and sanctuaries',
+                ),
+              ],
+            ),
           ),
         ),
       ),
       // Bottom Navigation
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType
-            .fixed, // Important pour afficher plus de 3 items
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -131,6 +168,111 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Méthode pour construire la section NFT
+  Widget _buildNFTSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                'Your Protected Animals',
+                style: Theme.of(context).textTheme.headlineSmall,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (!_isLoading)
+              TextButton.icon(
+                onPressed: _loadNFTs,
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Refresh'),
+              ),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        // NFT Grid
+        _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : _nfts.isEmpty
+                ? _buildEmptyNFTState()
+                : _buildNFTGrid(),
+      ],
+    );
+  }
+
+  // Méthode pour construire la grille de NFTs
+  Widget _buildNFTGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.7,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+          ),
+          itemCount: _nfts.length,
+          itemBuilder: (context, index) {
+            return Card(
+              elevation: 4,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: NFTCard(nft: _nfts[index]),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Méthode pour construire l'état vide des NFTs
+  Widget _buildEmptyNFTState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.pets, size: 48, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(
+              'No protected animals found',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Colors.grey,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ScanScreen(
+                      apiService: widget.apiService,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Scan an Animal'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Wallet Information Card
   Widget _buildWalletCard() {
     return Card(
@@ -140,53 +282,47 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Rain Forest Alliance',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 10),
             Text(
               'Address: ${widget.walletAddress}',
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 14,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontFamily: 'monospace',
+                  ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '\$WILD Balance: 19.800',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    SizedBox(height: 4), // Espacement entre les lignes
                     Text(
-                      'Animal protected: 42',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
+                      'Animals protected: ${_nfts.length}',
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    SizedBox(height: 4), // Espacement entre les lignes
                     Text(
                       'Funds raised: 3',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Use the apiService to perform wallet actions
                     widget.apiService.testRegistration().then((isHealthy) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -222,8 +358,13 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
+          overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text(description),
+        subtitle: Text(
+          description,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+        ),
       ),
     );
   }
