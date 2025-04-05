@@ -7,7 +7,7 @@ void main() {
 }
 
 class WildApp extends StatelessWidget {
-  const WildApp({Key? key}) : super(key: key);
+  const WildApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +20,7 @@ class WildApp extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: WalletConnectScreen(
-          apiService: apiService), // Pass apiService to the first screen
+      home: WalletConnectScreen(apiService: apiService),
       debugShowCheckedModeBanner: false,
     );
   }

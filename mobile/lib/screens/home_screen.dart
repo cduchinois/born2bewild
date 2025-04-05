@@ -4,6 +4,8 @@ import '../services/api_service.dart';
 import '../models/nft_model.dart';
 import '../widgets/nft_card.dart';
 import 'scan_screen.dart';
+import '../screens/nft_collection_screen.dart';
+import '../screens/campaign_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String walletAddress;
@@ -55,19 +57,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ScanScreen(
-            apiService: widget.apiService,
+    switch (index) {
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScanScreen(
+              apiService: widget.apiService,
+            ),
           ),
-        ),
-      );
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CampaignScreen(
+              apiService: widget.apiService,
+            ),
+          ),
+        );
+        break;
+      default:
+        setState(() {
+          _selectedIndex = index;
+        });
     }
   }
 
@@ -119,6 +133,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: 'KYA: Know Your Animal',
                   description:
                       'AI-powered facial recognition for animal identity tracking',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            NftCollectionScreen(apiService: widget.apiService),
+                      ),
+                    );
+                  },
                 ),
                 _buildFeatureCard(
                   icon: Icons.security,
@@ -344,14 +367,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Feature Card Widget
+  // Feature Card Widget
   Widget _buildFeatureCard({
     required IconData icon,
     required String title,
     required String description,
+    VoidCallback? onTap,
   }) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
+        onTap: onTap,
         leading: Icon(icon, color: Colors.green),
         title: Text(
           title,

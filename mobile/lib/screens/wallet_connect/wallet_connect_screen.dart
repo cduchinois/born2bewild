@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../home_screen.dart';
 import '../../services/api_service.dart';
 
@@ -15,29 +16,67 @@ class WalletConnectScreen extends StatefulWidget {
 }
 
 class _WalletConnectScreenState extends State<WalletConnectScreen> {
-  final String _fakeWalletAddress =
-      'bosq5LCREmQ4aiSwzYdvD7N1thoASZzHVqvCA1D2Cg5';
-
   bool _isConnecting = false;
 
-  void _connectWallet() {
+  Future<void> _connectWallet() async {
     setState(() {
       _isConnecting = true;
     });
 
-    // Simulate connection delay
-    Future.delayed(const Duration(seconds: 2), () {
-      // Navigate to home screen after "connection"
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            walletAddress: _fakeWalletAddress,
-            apiService: widget.apiService,
+    try {
+      // Attempt to launch Phantom wallet directly
+      final phantomUri = Uri.parse('phantom://');
+
+      if (await canLaunchUrl(phantomUri)) {
+        // Launch Phantom wallet
+        await launchUrl(phantomUri, mode: LaunchMode.externalApplication);
+
+        // Wait a bit to allow wallet connection
+        await Future.delayed(const Duration(seconds: 3));
+
+        // Navigate to HomeScreen with a mock wallet address
+        // In a real implementation, you'd retrieve the actual wallet address
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(
+              walletAddress:
+                  'bosq5LCREmQ4aiSwzYdvD7N1thoASZzHVqvCA1D2Cg5', // Replace with actual wallet address
+              apiService: widget.apiService,
+            ),
           ),
+        );
+      } else {
+        // Fallback if Phantom app is not installed
+        final appStoreUri = Uri.parse(
+            'https://apps.apple.com/app/phantom-crypto-wallet/id1574741552');
+        await launchUrl(appStoreUri, mode: LaunchMode.externalApplication);
+
+        setState(() {
+          _isConnecting = false;
+        });
+
+        // Show a message to install Phantom wallet
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please install Phantom Wallet from the App Store'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isConnecting = false;
+      });
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Wallet connection failed: $e'),
+          backgroundColor: Colors.red,
         ),
       );
-    });
+    }
   }
 
   @override
@@ -45,19 +84,19 @@ class _WalletConnectScreenState extends State<WalletConnectScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Image d'arrière-plan sans voile transparent
+          // Background image
           Image.asset(
             'assets/images/1.png',
             width: double.infinity,
             height: double.infinity,
             fit: BoxFit.cover,
           ),
-          // Contenu principal
+          // Main content
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo de l'application
+                // Application logo
                 Image.asset(
                   'assets/logo.png',
                   width: 200,
@@ -67,7 +106,7 @@ class _WalletConnectScreenState extends State<WalletConnectScreen> {
 
                 const SizedBox(height: 40),
 
-                // Bouton de connexion au wallet (placé avant les textes)
+                // Wallet connection button
                 _isConnecting
                     ? Column(
                         children: [
@@ -106,7 +145,7 @@ class _WalletConnectScreenState extends State<WalletConnectScreen> {
 
                 const SizedBox(height: 40),
 
-                // Textes placés après le bouton
+                // Texts
                 Text(
                   'Born 2 be Wild',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(

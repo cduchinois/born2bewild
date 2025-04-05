@@ -28,6 +28,7 @@ dependencies:
   shared_preferences: ^2.2.2
   crypto: ^3.0.3
   permission_handler: ^10.2.0
+  solana_wallet_adapter: ^0.0.4
 
 dev_dependencies:
   flutter_test:
@@ -44,3 +45,5 @@ flutter:
     - assets/logo.png
     - assets/images/
     - assets/icons/
+    - assets/images/tigre.jpg
+    - assets/images/gorilla.jpg

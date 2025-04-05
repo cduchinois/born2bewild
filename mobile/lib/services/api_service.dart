@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import '../models/nft_model.dart'; // Assurez-vous d'importer le modèle NFT
+import '../models/nft_model.dart';
 
 class ApiService {
   final String baseUrl;
@@ -12,6 +12,40 @@ class ApiService {
 
   ApiService({required this.baseUrl}) {
     debugPrint('ApiService initialized with URL: $baseUrl');
+  }
+
+  Future<Map<String, dynamic>> fetchNftCollection() async {
+    try {
+      final url = Uri.parse('$baseUrl/fetch-nft-collection');
+      debugPrint('Fetching NFT Collection from: $url');
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('NFT collection fetch timed out');
+        },
+      );
+
+      debugPrint('Response status code: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Parse the JSON response
+        final Map<String, dynamic> metadata = json.decode(response.body);
+        debugPrint('Parsed NFT Collection metadata: $metadata');
+        return metadata;
+      } else {
+        throw Exception('Failed to fetch NFT collection: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching NFT collection: $e');
+      rethrow;
+    }
   }
 
   // Méthode d'enregistrement utilisateur
