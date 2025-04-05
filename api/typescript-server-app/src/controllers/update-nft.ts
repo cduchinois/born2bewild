@@ -1,10 +1,14 @@
-import { create, mplCore, update } from '@metaplex-foundation/mpl-core'
+import { create, mplCore, update,
+	fetchAsset,
+	fetchCollection,
+ } from '@metaplex-foundation/mpl-core'
 import {
 	createGenericFile,
 	generateSigner,
 	signerIdentity,
 	keypairIdentity,
-	sol
+	sol,
+	publicKey as UMIPublicKey,
 } from '@metaplex-foundation/umi'
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
@@ -12,10 +16,15 @@ import { base58 } from '@metaplex-foundation/umi/serializers'
 import fs from 'fs'
 import path from 'path'
 import { config } from 'dotenv'
+import {
+	airdropIfRequired,
+	getExplorerLink,
+	getKeypairFromFile,
+  } from "@solana-developers/helpers";
 
 config()
 
-export const createNft = async (): Promise<string> => {
+export const updateNft = async (): Promise<string> => {
 	//
 	// ** Setting Up Umi **
 	//
@@ -64,6 +73,7 @@ export const createNft = async (): Promise<string> => {
 	// use `fs` to read file via a string path.
 	// You will need to understand the concept of pathing from a computing perspective.
 
+	/*
 	const imageFile = fs.readFileSync(
 		path.join('./image.jpg')
 	)
@@ -91,13 +101,14 @@ export const createNft = async (): Promise<string> => {
 
 	console.log('imageUri: ' + imageUri[0])
 
+	*/
 	//
 	// ** Upload Metadata to Arweave **
 	//
-
+		/*
 	const metadata = {
 		name: 'Armando NFT',
-		description: 'This is an NFT on Solana',
+		description: 'This is an UPDATED NFT on Solana',
 		image: imageUri[0],
 		external_url: 'https://example.com',
 		attributes: [
@@ -119,32 +130,58 @@ export const createNft = async (): Promise<string> => {
 			],
 			category: 'image',
 		},
-	}
+	}*/
 
 	// Call upon umi's `uploadJson` function to upload our metadata to Arweave via Irys.
-
+		/*
 	console.log('Uploading Metadata...')
 	const metadataUri = await umi.uploader.uploadJson(metadata).catch((err) => {
 		throw new Error(err)
-	})
+	})*/
 
 	//
 	// ** Creating the NFT **
 	//
 
 	// We generate a signer for the NFT
-	const asset = generateSigner(umi)
+	//const asset = generateSigner(umi)
 
-	console.log('Creating NFT...')
+	console.log('Updating NFT...')
+	/*
 	const tx = await create(umi, {
 		asset,
 		name: 'Armando NFT',
 		uri: metadataUri,
-	}).sendAndConfirm(umi)
+	}).sendAndConfirm(umi)*/
+
+	const address = "Cm7ATiDeJYHmMxePkhei97miMgWkPuDPJYAXKM2NRPnN";
+
+	const asset = await fetchAsset(umi, UMIPublicKey(address));
+	console.log('asset.name',asset.name)
+	//console.log('asset',asset)
+	/*
+	const collection = await fetchCollection(
+	  umi,
+	  UMIPublicKey(address),
+	);*/
+	//console.log('collection',collection)
+	
+	const tx = await update(umi, {
+	  asset,
+	  //collection,
+	  name: "My Updated Asset",
+	  //uri,
+	}).sendAndConfirm(umi);
+	//console.log('tx',tx)
+	
+	let explorerLink = getExplorerLink("address", asset.publicKey, "devnet");
+	console.log(`Asset updated with new metadata URI: ${explorerLink}`);
+	
+	console.log("✅ Finished successfully!");
 
 	// Finally we can deserialize the signature that we can check on chain.
-	const signature = base58.deserialize(tx.signature)[0]
-
+	//const signature = base58.deserialize(tx.signature)[0]
+	/*
 	// Log out the signature and the links to the transaction and the NFT.
 	console.log('\nNFT Created')
 	console.log('View Transaction on Solana Explorer')
@@ -153,7 +190,8 @@ export const createNft = async (): Promise<string> => {
 	console.log('View NFT on Metaplex Explorer')
 	console.log(`https://core.metaplex.com/explorer/${asset.publicKey}?env=devnet`)
 	const reponseURL = `https://core.metaplex.com/explorer/${asset.publicKey}?env=devnet`;
-	return reponseURL
+	*/
+	return explorerLink
 }
 
 //createNft()

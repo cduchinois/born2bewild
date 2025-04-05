@@ -6,6 +6,7 @@ const indexController = new IndexController();
 
 export function setRoutes(app: Router) {
     app.get('/api/get-action', indexController.getAction.bind(indexController));
+    app.get('/api/update-nft', indexController.updateNFT.bind(indexController));
     app.post('/api/post-action', indexController.postAction.bind(indexController));
 }
 
