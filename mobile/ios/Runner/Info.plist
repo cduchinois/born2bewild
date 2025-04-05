@@ -2,7 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- Existing URL Types -->
+    <!-- Permissions caméra et album photos - au niveau racine du dictionnaire -->
+    <key>NSCameraUsageDescription</key>
+    <string>Nous avons besoin d'accéder à votre caméra pour scanner et identifier les animaux</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Nous avons besoin d'accéder à vos albums photos pour enregistrer les images d'animaux identifiés</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Nous avons besoin d'accéder au microphone pour l'enregistrement de données audio</string>
+    
+    <!-- Types d'URL existants -->
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
@@ -17,20 +25,18 @@
         </dict>
     </array>
 
-    <!-- Add these new keys -->
+    <!-- Autres configurations existantes -->
     <key>LSApplicationQueriesSchemes</key>
     <array>
         <string>phantom</string>
         <string>born2bewild</string>
     </array>
 
-    <!-- Universal Links Support -->
     <key>com.apple.developer.associated-domains</key>
     <array>
         <string>applinks:born2bewild.com</string>
     </array>
 
-    <!-- Rest of your existing configurations -->
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>MinimumOSVersion</key>

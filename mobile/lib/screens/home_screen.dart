@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../services/api_service.dart';
+import 'scan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String walletAddress;
+  final ApiService apiService;
 
   const HomeScreen({
     super.key,
     required this.walletAddress,
+    required this.apiService,
   });
 
   @override
@@ -19,16 +23,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Bottom navigation handler
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 2) {
+      // Scan tab - navigate to VerificationScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ScanScreen(
+            apiService: widget.apiService,
+          ),
+        ),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('WILD Platform'),
+        title: const Text('WILD Sol'),
         actions: [
           IconButton(
             icon: const Icon(Icons.copy),
@@ -85,18 +101,28 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       // Bottom Navigation
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType
+            .fixed, // Important pour afficher plus de 3 items
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.campaign),
-            label: 'Campaigns',
+            icon: Icon(Icons.app_registration),
+            label: 'Register',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Profile',
+            icon: Icon(Icons.qr_code_scanner),
+            label: 'Scan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.campaign),
+            label: 'Campaign',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -115,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Wallet Connected',
+              'Rain Forest Alliance',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -133,19 +159,43 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Balance: 0.05 SOL',
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '\$WILD Balance: 19.800',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 4), // Espacement entre les lignes
+                    Text(
+                      'Animal protected: 42',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 4), // Espacement entre les lignes
+                    Text(
+                      'Funds raised: 3',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // TODO: Implement wallet actions
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Wallet management coming soon')),
-                    );
+                    // Use the apiService to perform wallet actions
+                    widget.apiService.testRegistration().then((isHealthy) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(isHealthy
+                              ? 'Server is running. Wallet management coming soon'
+                              : 'Server is not responding. Please try again later'),
+                        ),
+                      );
+                    });
                   },
                   child: const Text('Manage'),
                 ),

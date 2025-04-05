@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
-import '../home/home_screen.dart';
+import '../home_screen.dart';
+import '../../services/api_service.dart';
 
 class WalletConnectScreen extends StatefulWidget {
-  const WalletConnectScreen({super.key});
+  final ApiService apiService;
+
+  const WalletConnectScreen({
+    super.key,
+    required this.apiService,
+  });
 
   @override
   _WalletConnectScreenState createState() => _WalletConnectScreenState();
 }
 
 class _WalletConnectScreenState extends State<WalletConnectScreen> {
-  final String _fakeWalletAddress =
-      'GxE7m4B5WXqEq1EjUQmuMkJNRRrJFseRg9H7ePpiZT6b';
+  final String _fakeWalletAddress = 'GxE7m4B5WXqEq1EjUQmuMkJ...';
 
   bool _isConnecting = false;
 
@@ -25,7 +30,10 @@ class _WalletConnectScreenState extends State<WalletConnectScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(walletAddress: _fakeWalletAddress),
+          builder: (context) => HomeScreen(
+            walletAddress: _fakeWalletAddress,
+            apiService: widget.apiService,
+          ),
         ),
       );
     });
@@ -49,18 +57,31 @@ class _WalletConnectScreenState extends State<WalletConnectScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo placeholder - replace with your asset
-              const FlutterLogo(size: 200),
+              // Logo de l'application
+              Image.asset(
+                'assets/logo.png',
+                width: 200,
+                height: 200,
+                fit: BoxFit.contain,
+              ),
               const SizedBox(height: 30),
               Text(
-                'WILD Platform',
+                'WILD Sol',
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
                       color: Colors.white,
                     ),
               ),
               const SizedBox(height: 20),
               Text(
-                'Protecting Animals Through Blockchain',
+                'Born 2 be Wild',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.white70,
+                      fontSize: 24,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                'Powered by Solana',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Colors.white70,
                     ),
