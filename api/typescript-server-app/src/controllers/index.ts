@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
+import { createNft } from "./create-nft";
 
 export class IndexController {
-    public getAction(req: Request, res: Response): void {
+    public async getAction(req: Request, res: Response): Promise<any> {
         // Handle GET request
-        res.send('GET action executed by armando2');
+        const response = await createNft();
+        res.send(response);
     }
 
     public postAction(req: Request, res: Response): void {
