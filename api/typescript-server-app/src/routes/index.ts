@@ -5,9 +5,11 @@ const router = Router();
 const indexController = new IndexController();
 
 export function setRoutes(app: Router) {
-    app.get('/api/get-action', indexController.getAction.bind(indexController));
-    app.get('/api/update-nft', indexController.updateNFT.bind(indexController));
-    app.post('/api/post-action', indexController.postAction.bind(indexController));
+    app.post('/api/create-nft', indexController.createNFT.bind(indexController));
+    app.post('/api/update-nft', indexController.updateNFT.bind(indexController));
+    app.get('/api/fetch-nft', indexController.fetchNFT.bind(indexController));
+    app.get('/api/fetch-nft', indexController.fetchNftCollection.bind(indexController));
+
 }
 
 export default router;

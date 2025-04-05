@@ -1,10 +1,11 @@
-import { create, mplCore, update } from '@metaplex-foundation/mpl-core'
+import { create, mplCore, update, fetchCollection } from '@metaplex-foundation/mpl-core'
 import {
 	createGenericFile,
 	generateSigner,
 	signerIdentity,
 	keypairIdentity,
-	sol
+	sol,
+	publicKey as UMIPublicKey,
 } from '@metaplex-foundation/umi'
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
@@ -12,14 +13,9 @@ import { base58 } from '@metaplex-foundation/umi/serializers'
 import fs from 'fs'
 import path from 'path'
 import { config } from 'dotenv'
-
 config()
 
-export const createNft = async (): Promise<string> => {
-	//
-	// ** Setting Up Umi **
-	//
-
+export const createNft = async (metadata: any): Promise<string> => {
 	const umi = createUmi('https://api.devnet.solana.com')
 		.use(mplCore())
 		.use(
@@ -34,18 +30,15 @@ export const createNft = async (): Promise<string> => {
 	// load the wallet you wish to use via relative pathing.	
 	//const walletFile = fs.readFileSync('./keypair.json')
 	const privateKey = process.env.PRIVATE_KEY || ""
-	console.log('privateKey', privateKey)
+	//console.log('privateKey', privateKey)
 	const walletFile = JSON.parse(privateKey);
 	//const walletFile = JSON.parse(fs.readFileSync(path.join("./keypair.json"), "utf-8"));
 	//.log('walletFile',walletFile)
-
 	// Convert your walletFile onto a keypair.
 	let keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(walletFile));
-
-	console.log('keypair', keypair)
+	//console.log('keypair', keypair)
 	// Load the keypair into umi.
 	umi.use(keypairIdentity(keypair));
-
 
 	/*
   const signer = generateSigner(umi)
@@ -63,7 +56,7 @@ export const createNft = async (): Promise<string> => {
 
 	// use `fs` to read file via a string path.
 	// You will need to understand the concept of pathing from a computing perspective.
-
+/*
 	const imageFile = fs.readFileSync(
 		path.join('./image.jpg')
 	)
@@ -91,10 +84,21 @@ export const createNft = async (): Promise<string> => {
 
 	console.log('imageUri: ' + imageUri[0])
 
+	metadata.image = imageUri[0];
+    metadata.properties = {
+        files: [
+            {
+                uri: imageUri[0],
+                type: 'image/jpeg',
+            },
+        ],
+        category: 'image',
+    };*/
 	//
 	// ** Upload Metadata to Arweave **
 	//
 
+	/*
 	const metadata = {
 		name: 'Armando NFT',
 		description: 'This is an NFT on Solana',
@@ -102,11 +106,15 @@ export const createNft = async (): Promise<string> => {
 		external_url: 'https://example.com',
 		attributes: [
 			{
-				trait_type: 'trait1',
+				trait_type: 'issuerID',
 				value: 'value1',
 			},
 			{
-				trait_type: 'trait2',
+				trait_type: 'chipId',
+				value: 'value2',
+			},
+			{
+				trait_type: 'status',
 				value: 'value2',
 			},
 		],
@@ -119,8 +127,7 @@ export const createNft = async (): Promise<string> => {
 			],
 			category: 'image',
 		},
-	}
-
+	}*/
 	// Call upon umi's `uploadJson` function to upload our metadata to Arweave via Irys.
 
 	console.log('Uploading Metadata...')
@@ -131,14 +138,22 @@ export const createNft = async (): Promise<string> => {
 	//
 	// ** Creating the NFT **
 	//
-
+	const collectionAddress = "8AbQVR7qVsSbMTCWoAkADqwGBg2UGHEwnngqav69HS1t"
+	
+	const collection = await fetchCollection(
+	  umi,
+	  UMIPublicKey(collectionAddress),
+	);
+	console.log('collection',collection)
+	
 	// We generate a signer for the NFT
 	const asset = generateSigner(umi)
 
 	console.log('Creating NFT...')
 	const tx = await create(umi, {
 		asset,
-		name: 'Armando NFT',
+		name: 'Wild SOL NFT',
+		collection,
 		uri: metadataUri,
 	}).sendAndConfirm(umi)
 

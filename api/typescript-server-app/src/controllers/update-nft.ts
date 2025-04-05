@@ -24,11 +24,7 @@ import {
 
 config()
 
-export const updateNft = async (): Promise<string> => {
-	//
-	// ** Setting Up Umi **
-	//
-
+export const updateNft = async (address: string, metadata: any): Promise<string> => {
 	const umi = createUmi('https://api.devnet.solana.com')
 		.use(mplCore())
 		.use(
@@ -43,28 +39,26 @@ export const updateNft = async (): Promise<string> => {
 	// load the wallet you wish to use via relative pathing.	
 	//const walletFile = fs.readFileSync('./keypair.json')
 	const privateKey = process.env.PRIVATE_KEY || ""
-	console.log('privateKey', privateKey)
+	//console.log('privateKey', privateKey)
 	const walletFile = JSON.parse(privateKey);
 	//const walletFile = JSON.parse(fs.readFileSync(path.join("./keypair.json"), "utf-8"));
 	//.log('walletFile',walletFile)
 
 	// Convert your walletFile onto a keypair.
 	let keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(walletFile));
-
-	console.log('keypair', keypair)
+	//console.log('keypair', keypair)
 	// Load the keypair into umi.
 	umi.use(keypairIdentity(keypair));
-
-
-	/*
-  const signer = generateSigner(umi)
-  umi.use(signerIdentity(signer))
+	
+  //const signer = generateSigner(umi)
+  //umi.use(signerIdentity(signer))
+  /*
   // Airdrop 1 SOL to the identity
   // if you end up with a 429 too many requests error, you may have to use
   // the filesystem wallet method or change rpcs.
   console.log('Airdropping 1 SOL to identity')
   await umi.rpc.airdrop(umi.identity.publicKey, sol(1))
-*/
+		*/
 
 	//
 	// ** Upload an image to Arweave **
@@ -101,13 +95,12 @@ export const updateNft = async (): Promise<string> => {
 
 	console.log('imageUri: ' + imageUri[0])
 
-	*/
+	
 	//
 	// ** Upload Metadata to Arweave **
 	//
-		/*
 	const metadata = {
-		name: 'Armando NFT',
+		name: 'Armandos updated NFT',
 		description: 'This is an UPDATED NFT on Solana',
 		image: imageUri[0],
 		external_url: 'https://example.com',
@@ -130,14 +123,14 @@ export const updateNft = async (): Promise<string> => {
 			],
 			category: 'image',
 		},
-	}*/
+	}
 
 	// Call upon umi's `uploadJson` function to upload our metadata to Arweave via Irys.
-		/*
+		*/
 	console.log('Uploading Metadata...')
 	const metadataUri = await umi.uploader.uploadJson(metadata).catch((err) => {
 		throw new Error(err)
-	})*/
+	})
 
 	//
 	// ** Creating the NFT **
@@ -147,6 +140,7 @@ export const updateNft = async (): Promise<string> => {
 	//const asset = generateSigner(umi)
 
 	console.log('Updating NFT...')
+
 	/*
 	const tx = await create(umi, {
 		asset,
@@ -154,23 +148,17 @@ export const updateNft = async (): Promise<string> => {
 		uri: metadataUri,
 	}).sendAndConfirm(umi)*/
 
-	const address = "Cm7ATiDeJYHmMxePkhei97miMgWkPuDPJYAXKM2NRPnN";
+	//const address = "Cm7ATiDeJYHmMxePkhei97miMgWkPuDPJYAXKM2NRPnN";
 
 	const asset = await fetchAsset(umi, UMIPublicKey(address));
 	console.log('asset.name',asset.name)
 	//console.log('asset',asset)
-	/*
-	const collection = await fetchCollection(
-	  umi,
-	  UMIPublicKey(address),
-	);*/
-	//console.log('collection',collection)
-	
+
 	const tx = await update(umi, {
 	  asset,
 	  //collection,
-	  name: "My Updated Asset",
-	  //uri,
+	  name: asset.name,
+	  uri: metadataUri,
 	}).sendAndConfirm(umi);
 	//console.log('tx',tx)
 	
