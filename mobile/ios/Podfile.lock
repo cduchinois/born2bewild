@@ -1,0 +1,45 @@
+PODS:
+  - Factory (2.4.3)
+  - Flutter (1.0.0)
+  - privy_flutter (0.0.1):
+    - Factory (= 2.4.3)
+    - Flutter
+    - PrivySDK (~> 2.0.0-beta.3)
+  - PrivySDK (2.0.0-beta.3)
+  - uni_links (0.0.1):
+    - Flutter
+  - url_launcher_ios (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - privy_flutter (from `.symlinks/plugins/privy_flutter/ios`)
+  - uni_links (from `.symlinks/plugins/uni_links/ios`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Factory
+    - PrivySDK
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  privy_flutter:
+    :path: ".symlinks/plugins/privy_flutter/ios"
+  uni_links:
+    :path: ".symlinks/plugins/uni_links/ios"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
+
+SPEC CHECKSUMS:
+  Factory: 9d20d8cb56fc44b341d6dad1cf67dc93e9ae7788
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  privy_flutter: d231df7f8bf353c0dbcb4b1274a63a4f73911dec
+  PrivySDK: 5839be820a7e3edfd454207007d84af5e0b181a0
+  uni_links: ed8c961e47ed9ce42b6d91e1de8049e38a4b3152
+  url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
+
+PODFILE CHECKSUM: 1857a7cdb7dfafe45f2b0e9a9af44644190f7506
+
+COCOAPODS: 1.16.2
