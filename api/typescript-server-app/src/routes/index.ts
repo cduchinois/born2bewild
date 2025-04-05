@@ -8,7 +8,8 @@ export function setRoutes(app: Router) {
     app.post('/api/create-nft', indexController.createNFT.bind(indexController));
     app.post('/api/update-nft', indexController.updateNFT.bind(indexController));
     app.get('/api/fetch-nft', indexController.fetchNFT.bind(indexController));
-    app.get('/api/fetch-nft', indexController.fetchNftCollection.bind(indexController));
+    app.get('/api/fetch-collection', indexController.fetchNftCollection.bind(indexController));
+    app.get('/api/fetch-collection-assets', indexController.fetchNftCollectionAssets.bind(indexController));
 
 }
 

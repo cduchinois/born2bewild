@@ -1,4 +1,4 @@
-import { mplCore, fetchAsset, fetchCollection } from '@metaplex-foundation/mpl-core';
+import { mplCore, fetchAsset, fetchCollection, fetchAssetsByCollection } from '@metaplex-foundation/mpl-core';
 import { publicKey as UMIPublicKey } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { getExplorerLink } from "@solana-developers/helpers";

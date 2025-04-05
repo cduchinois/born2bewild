@@ -3,6 +3,7 @@ import { createNft } from "./create-nft";
 import { updateNft } from "./update-nft";
 import { fetchNft } from "./fetch-nft";
 import { fetchNftCollection } from "./fetch-collection";
+import { fetchNftCollectionAssets } from './fetch-collection-assets';
 
 export class IndexController {
     public async createNFT(req: Request, res: Response): Promise<any> {
@@ -47,6 +48,14 @@ export class IndexController {
         // Handle GET request
         const query = typeof req.query.address === 'string' ? req.query.address : 'defaultSearchValue';
         const response = await fetchNftCollection(query);
+        //const responseData = response.;
+        res.send(response);
+    }
+
+    public async fetchNftCollectionAssets(req: Request, res: Response): Promise<any> {
+        // Handle GET request
+        const query = typeof req.query.address === 'string' ? req.query.address : 'defaultSearchValue';
+        const response = await fetchNftCollectionAssets(query);
         //const responseData = response.;
         res.send(response);
     }
