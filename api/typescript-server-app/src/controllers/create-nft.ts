@@ -144,7 +144,7 @@ export const createNft = async (metadata: any): Promise<string> => {
 	  umi,
 	  UMIPublicKey(collectionAddress),
 	);
-	console.log('collection',collection)
+	//console.log('collection',collection)
 	
 	// We generate a signer for the NFT
 	const asset = generateSigner(umi)

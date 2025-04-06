@@ -149,6 +149,12 @@ export const updateNft = async (address: string, metadata: any): Promise<string>
 	}).sendAndConfirm(umi)*/
 
 	//const address = "Cm7ATiDeJYHmMxePkhei97miMgWkPuDPJYAXKM2NRPnN";
+	const collectionAddress = "8AbQVR7qVsSbMTCWoAkADqwGBg2UGHEwnngqav69HS1t"
+	
+	const collection = await fetchCollection(
+	  umi,
+	  UMIPublicKey(collectionAddress),
+	);
 
 	const asset = await fetchAsset(umi, UMIPublicKey(address));
 	console.log('asset.name',asset.name)
@@ -156,7 +162,7 @@ export const updateNft = async (address: string, metadata: any): Promise<string>
 
 	const tx = await update(umi, {
 	  asset,
-	  //collection,
+	  collection,
 	  name: asset.name,
 	  uri: metadataUri,
 	}).sendAndConfirm(umi);
