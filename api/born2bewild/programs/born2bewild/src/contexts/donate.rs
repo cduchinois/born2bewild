@@ -32,12 +32,14 @@ pub struct Donate<'info> {
     pub wild_token_account: InterfaceAccount<'info, TokenAccount>,
     
     #[account(
+        mut,
         seeds = [b"project", project_name.as_str().as_bytes()],
         bump
     )]
     pub project: Account<'info, DonationProject>,
     
     #[account(
+        mut,
         seeds = [b"treasury", project.key().as_ref()],
         bump
     )]

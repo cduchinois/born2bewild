@@ -15,12 +15,14 @@ pub struct Withdraw<'info> {
     pub platform: Account<'info, Config>,
 
     #[account(
+        mut,
         seeds = [b"project", project_name.as_str().as_bytes()],
         bump
     )]
     pub project: Account<'info, DonationProject>,
     
     #[account(
+        mut,
         seeds = [b"treasury", project.key().as_ref()],
         bump
     )]

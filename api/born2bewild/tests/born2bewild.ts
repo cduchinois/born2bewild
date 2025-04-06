@@ -34,8 +34,9 @@ describe("born2bewild", () => {
   let projectCreator: Keypair;
   let wildTokenMint2: Keypair;
 
-  const PLATFORM_NAME = "Born2BeWild v7";
-  const PROJECT_NAME = "Save the Tigers 7";
+  const timestamp = Date.now();
+  const PLATFORM_NAME = "Born2BeWild v" + timestamp;
+  const PROJECT_NAME = "Save the Tigers " + timestamp;
   const PROJECT_DESC = "Help us protect tigers in Asia";
   const PROJECT_LOCATION = "Asia";
   const PROJECT_TARGET_AMOUNT = new anchor.BN(10 * LAMPORTS_PER_SOL); // 10 SOL
@@ -152,14 +153,15 @@ describe("born2bewild", () => {
       .donate(PROJECT_NAME, donationAmount)
       .accounts({
         donor: donor.publicKey,
+        platform: born2bewildPDA,
         wildTokenMint: wildTokenMint2.publicKey,
         wildTokenAccount: donorWildAccount,
         project: projectPDA,
         treasury: treasuryPDA,
-        platform: born2bewildPDA,
-        tokenProgram: TOKEN_INTERFACE_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
-        associated_token_program: ASSOCIATED_TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       })
       .signers([donor])
       .rpc();
@@ -171,12 +173,17 @@ describe("born2bewild", () => {
     const treasuryFinalBalance = await provider.connection.getBalance(treasuryPDA);
     const wildTokenBalance = await provider.connection.getTokenAccountBalance(donorWildAccount);
 
-    // Verify SOL transfer
+    // Get minimum rent for token account
+    const rentExemptBalance = await provider.connection.getMinimumBalanceForRentExemption(165); // Size of token account
+
+    // Verify SOL transfer (donation amount + rent for token account)
     assert.equal(
       donorInitialBalance - donorFinalBalance,
-      donationAmount.toNumber(),
+      donationAmount.toNumber() + rentExemptBalance,
       "Incorrect SOL deduction from donor"
     );
+    
+    // Verify treasury only receives donation amount
     assert.equal(
       treasuryFinalBalance - treasuryInitialBalance,
       donationAmount.toNumber(),
@@ -211,9 +218,7 @@ describe("born2bewild", () => {
         treasury: treasuryPDA,
         platform: born2bewildPDA,
         recipient: projectCreator.publicKey,
-        tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .signers([projectCreator])
       .rpc();
@@ -223,6 +228,9 @@ describe("born2bewild", () => {
     // Verify balances after withdrawal
     const creatorFinalBalance = await provider.connection.getBalance(projectCreator.publicKey);
     const treasuryFinalBalance = await provider.connection.getBalance(treasuryPDA);
+
+    console.log("Creator final balance:", creatorFinalBalance);
+    console.log("Treasury final balance:", treasuryFinalBalance);
 
     // Verify SOL transfer
     assert.equal(
