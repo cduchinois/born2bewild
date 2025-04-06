@@ -27,6 +27,7 @@ dependencies:
   walletconnect_dart: ^0.0.11
   shared_preferences: ^2.2.2
   crypto: ^3.0.3
+  flutter_secure_storage: ^8.0.0
   permission_handler: ^10.2.0
   solana_wallet_adapter: ^0.0.4
 
