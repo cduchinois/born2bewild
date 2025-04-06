@@ -47,7 +47,7 @@ Born2BeWild is an innovative blockchain-based solution for tracking and managing
 ### Prerequisites
 - Solana CLI tools
 - Node.js and npm
-- Mobile development environment
+- Flutter mobile framework
 - Anchor framework
 
 ### Installation
@@ -109,18 +109,18 @@ anchor test
 
 Born2BeWild was created during the Paris Blockchain Week Hackathon 2025 by:
 
-- [Yue] - [Business Expert]
-- [Ilham] - [Smart Contract Expert]
-- [Ty] - [Mobile/Frontend Expert]
-- [Anfal] - [AI/Web3 Expert]
-- [Armando] - [API/Backend Expert]
+- [Yue](https://github.com/cduchinois) - [Business Expert]
+- [Ilham](https://github.com/ielboulo) - [Smart Contract Expert]
+- [Ty](https://github.com/Ty-HA) - [Mobile/Frontend Expert]
+- [Anfal](https://github.com/anii76) - [AI/Web3 Expert]
+- [Armando](https://github.com/armsves) - [API/Backend Expert]
 
 ## 🎮 Demo
 
 Check out our project demo from Paris Blockchain Week Hackathon 2025:
 - [Live Demo](https://demo-link-here)
-- [Presentation Deck](https://presentation-link-here)
-- [Demo Video](https://video-link-here)
+- [Presentation Deck]([https://presentation-link-here](https://drive.google.com/file/d/1yFNoWPXj2LpEU5UsCyhlcWe3m0n4XARj/view?usp=sharing))
+- [Demo Video](https://youtube.com/shorts/Tc7ds4yZVRY)
 
 ## 🤝 Contributing
 
