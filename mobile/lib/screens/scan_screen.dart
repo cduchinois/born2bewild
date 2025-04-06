@@ -22,8 +22,8 @@ class _ScanScreenState extends State<ScanScreen> {
 
   // Simulation data
   final Map<String, dynamic> _animalData = {
-    'name': 'Bengal Tiger #A2451',
-    'species': 'Panthera tigris tigris',
+    'name': 'Toby',
+    'species': 'Gorilla',
     'age': '4 years',
     'gender': 'Female',
     'location': 'Ranthambore National Park, India',

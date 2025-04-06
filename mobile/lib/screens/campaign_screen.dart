@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'create_campaign_screen.dart'; // Import the create campaign screen
 
 class Campaign {
   final String title;
@@ -58,7 +59,7 @@ class _CampaignScreenState extends State<CampaignScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wildlife Campaigns'),
+        title: const Text('Ongoing Campaigns'),
         centerTitle: true,
       ),
       body: ListView.builder(
@@ -71,9 +72,17 @@ class _CampaignScreenState extends State<CampaignScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Future: Add new campaign functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Campaign creation coming soon!')),
+          // Navigate to create campaign screen when '+' button is pressed
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateCampaignScreen(
+                apiService: widget.apiService,
+                userType:
+                    'AGREED_ASSOCIATION', // Setting as verified association
+                // Pre-filled data can be passed here if needed
+              ),
+            ),
           );
         },
         child: const Icon(Icons.add),

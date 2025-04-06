@@ -90,17 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('WILD Sol'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.copy),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: widget.walletAddress));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Wallet address copied')),
-              );
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -154,6 +143,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: 'Fundraising',
                   description:
                       'One-click token launch for vets, NGOs, zoos, and sanctuaries',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CampaignScreen(
+                          apiService: widget.apiService,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -312,13 +311,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
             ),
             const SizedBox(height: 10),
-            Text(
-              'Address: ${widget.walletAddress}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'monospace',
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Address: ${widget.walletAddress}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontFamily: 'monospace',
+                        ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.copy, size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () {
+                    Clipboard.setData(
+                        ClipboardData(text: widget.walletAddress));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Wallet address copied')),
+                    );
+                  },
+                ),
+              ],
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -344,6 +361,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
+                // Bouton "Manage" commenté pour le moment
+                /*
                 ElevatedButton(
                   onPressed: () {
                     widget.apiService.testRegistration().then((isHealthy) {
@@ -358,6 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: const Text('Manage'),
                 ),
+                */
               ],
             ),
           ],
@@ -366,7 +386,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Feature Card Widget
   // Feature Card Widget
   Widget _buildFeatureCard({
     required IconData icon,

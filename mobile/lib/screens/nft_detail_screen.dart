@@ -10,7 +10,9 @@ class NFTDetailScreen extends StatelessWidget {
   // Méthode pour ouvrir Solscan
   Future<void> _launchSolscan() async {
     // URL de base pour Solscan Devnet
-    final solscanUrl = 'https://solscan.io/token/${nft.chipId}?cluster=devnet';
+    // final solscanUrl = 'https://solscan.io/token/${nft.chipId}?cluster=devnet';
+    const solscanUrl =
+        'https://solscan.io/account/bosq5LCREmQ4aiSwzYdvD7N1thoASZzHVqvCA1D2Cg5?cluster=devnet';
 
     try {
       final Uri url = Uri.parse(solscanUrl);
