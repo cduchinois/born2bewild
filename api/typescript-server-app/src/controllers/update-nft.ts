@@ -1,4 +1,7 @@
-import { create, mplCore, update, fetchCollection } from '@metaplex-foundation/mpl-core'
+import { create, mplCore, update,
+	fetchAsset,
+	fetchCollection,
+ } from '@metaplex-foundation/mpl-core'
 import {
 	createGenericFile,
 	generateSigner,
@@ -13,9 +16,15 @@ import { base58 } from '@metaplex-foundation/umi/serializers'
 import fs from 'fs'
 import path from 'path'
 import { config } from 'dotenv'
+import {
+	airdropIfRequired,
+	getExplorerLink,
+	getKeypairFromFile,
+  } from "@solana-developers/helpers";
+
 config()
 
-export const createNft = async (metadata: any): Promise<string> => {
+export const updateNft = async (address: string, metadata: any): Promise<string> => {
 	const umi = createUmi('https://api.devnet.solana.com')
 		.use(mplCore())
 		.use(
@@ -34,21 +43,22 @@ export const createNft = async (metadata: any): Promise<string> => {
 	const walletFile = JSON.parse(privateKey);
 	//const walletFile = JSON.parse(fs.readFileSync(path.join("./keypair.json"), "utf-8"));
 	//.log('walletFile',walletFile)
+
 	// Convert your walletFile onto a keypair.
 	let keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(walletFile));
 	//console.log('keypair', keypair)
 	// Load the keypair into umi.
 	umi.use(keypairIdentity(keypair));
-
-	/*
-  const signer = generateSigner(umi)
-  umi.use(signerIdentity(signer))
+	
+  //const signer = generateSigner(umi)
+  //umi.use(signerIdentity(signer))
+  /*
   // Airdrop 1 SOL to the identity
   // if you end up with a 429 too many requests error, you may have to use
   // the filesystem wallet method or change rpcs.
   console.log('Airdropping 1 SOL to identity')
   await umi.rpc.airdrop(umi.identity.publicKey, sol(1))
-*/
+		*/
 
 	//
 	// ** Upload an image to Arweave **
@@ -56,7 +66,8 @@ export const createNft = async (metadata: any): Promise<string> => {
 
 	// use `fs` to read file via a string path.
 	// You will need to understand the concept of pathing from a computing perspective.
-/*
+
+	/*
 	const imageFile = fs.readFileSync(
 		path.join('./image.jpg')
 	)
@@ -84,37 +95,22 @@ export const createNft = async (metadata: any): Promise<string> => {
 
 	console.log('imageUri: ' + imageUri[0])
 
-	metadata.image = imageUri[0];
-    metadata.properties = {
-        files: [
-            {
-                uri: imageUri[0],
-                type: 'image/jpeg',
-            },
-        ],
-        category: 'image',
-    };*/
+	
 	//
 	// ** Upload Metadata to Arweave **
 	//
-
-	/*
 	const metadata = {
-		name: 'Armando NFT',
-		description: 'This is an NFT on Solana',
+		name: 'Armandos updated NFT',
+		description: 'This is an UPDATED NFT on Solana',
 		image: imageUri[0],
 		external_url: 'https://example.com',
 		attributes: [
 			{
-				trait_type: 'issuerID',
+				trait_type: 'trait1',
 				value: 'value1',
 			},
 			{
-				trait_type: 'chipId',
-				value: 'value2',
-			},
-			{
-				trait_type: 'status',
+				trait_type: 'trait2',
 				value: 'value2',
 			},
 		],
@@ -127,9 +123,10 @@ export const createNft = async (metadata: any): Promise<string> => {
 			],
 			category: 'image',
 		},
-	}*/
-	// Call upon umi's `uploadJson` function to upload our metadata to Arweave via Irys.
+	}
 
+	// Call upon umi's `uploadJson` function to upload our metadata to Arweave via Irys.
+		*/
 	console.log('Uploading Metadata...')
 	const metadataUri = await umi.uploader.uploadJson(metadata).catch((err) => {
 		throw new Error(err)
@@ -138,28 +135,41 @@ export const createNft = async (metadata: any): Promise<string> => {
 	//
 	// ** Creating the NFT **
 	//
-	const collectionAddress = "8AbQVR7qVsSbMTCWoAkADqwGBg2UGHEwnngqav69HS1t"
-	
-	const collection = await fetchCollection(
-	  umi,
-	  UMIPublicKey(collectionAddress),
-	);
-	console.log('collection',collection)
-	
-	// We generate a signer for the NFT
-	const asset = generateSigner(umi)
 
-	console.log('Creating NFT...')
+	// We generate a signer for the NFT
+	//const asset = generateSigner(umi)
+
+	console.log('Updating NFT...')
+
+	/*
 	const tx = await create(umi, {
 		asset,
-		name: 'Wild SOL NFT',
-		collection,
+		name: 'Armando NFT',
 		uri: metadataUri,
-	}).sendAndConfirm(umi)
+	}).sendAndConfirm(umi)*/
+
+	//const address = "Cm7ATiDeJYHmMxePkhei97miMgWkPuDPJYAXKM2NRPnN";
+
+	const asset = await fetchAsset(umi, UMIPublicKey(address));
+	console.log('asset.name',asset.name)
+	//console.log('asset',asset)
+
+	const tx = await update(umi, {
+	  asset,
+	  //collection,
+	  name: asset.name,
+	  uri: metadataUri,
+	}).sendAndConfirm(umi);
+	//console.log('tx',tx)
+	
+	let explorerLink = getExplorerLink("address", asset.publicKey, "devnet");
+	console.log(`Asset updated with new metadata URI: ${explorerLink}`);
+	
+	console.log("✅ Finished successfully!");
 
 	// Finally we can deserialize the signature that we can check on chain.
-	const signature = base58.deserialize(tx.signature)[0]
-
+	//const signature = base58.deserialize(tx.signature)[0]
+	/*
 	// Log out the signature and the links to the transaction and the NFT.
 	console.log('\nNFT Created')
 	console.log('View Transaction on Solana Explorer')
@@ -168,7 +178,8 @@ export const createNft = async (metadata: any): Promise<string> => {
 	console.log('View NFT on Metaplex Explorer')
 	console.log(`https://core.metaplex.com/explorer/${asset.publicKey}?env=devnet`)
 	const reponseURL = `https://core.metaplex.com/explorer/${asset.publicKey}?env=devnet`;
-	return reponseURL
+	*/
+	return explorerLink
 }
 
 //createNft()
