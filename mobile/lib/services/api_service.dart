@@ -82,17 +82,63 @@ class ApiService {
         // Parse the response
         final dynamic parsedResponse = json.decode(response.body);
 
-        // If it's a list of image URLs, transform it
+        // If it's a list of metadata URLs
         if (parsedResponse is List<dynamic>) {
-          return {
-            'total_assets': parsedResponse.length,
-            'assets': parsedResponse
-                .map((imageUrl) => {
-                      'image': imageUrl,
-                      'name': 'Unnamed Asset', // You might want to improve this
-                    })
-                .toList()
-          };
+          // Fetch full metadata for each URL concurrently
+          final assets =
+              await Future.wait(parsedResponse.map((metadataUrl) async {
+            try {
+              // Fetch full metadata for each asset
+              final metadataResponse = await http.get(Uri.parse(metadataUrl));
+
+              if (metadataResponse.statusCode == 200) {
+                final Map<String, dynamic> metadata =
+                    json.decode(metadataResponse.body);
+
+                // Extract image URL
+                String? imageUrl;
+                if (metadata['properties'] != null &&
+                    metadata['properties']['files'] is List &&
+                    (metadata['properties']['files'] as List).isNotEmpty) {
+                  imageUrl = metadata['properties']['files'][0]['uri'];
+                }
+                imageUrl ??= metadata['image'];
+
+                // Extract attributes
+                final attributes = metadata['attributes'] is List
+                    ? (metadata['attributes'] as List)
+                        .map((attr) => {
+                              'trait_type': attr['trait_type'] ?? '',
+                              'value': attr['value'] ?? ''
+                            })
+                        .toList()
+                    : [];
+
+                return {
+                  'name': metadata['name'] ?? 'Unnamed Asset',
+                  'description': metadata['description'] ?? '',
+                  'image': imageUrl ?? metadataUrl,
+                  'external_url': metadata['external_url'],
+                  'attributes': attributes,
+                  'original_metadata': metadata
+                };
+              } else {
+                // Fallback if metadata fetch fails
+                return {
+                  'name': 'Failed to load',
+                  'image': metadataUrl,
+                };
+              }
+            } catch (e) {
+              debugPrint('Error fetching individual asset metadata: $e');
+              return {
+                'name': 'Failed to load',
+                'image': metadataUrl,
+              };
+            }
+          }));
+
+          return {'total_assets': assets.length, 'assets': assets};
         }
 
         // If it's already in the correct format, return it

@@ -248,38 +248,225 @@ class _NftCollectionScreenState extends State<NftCollectionScreen> {
   }
 
   Widget _buildAssetCard(Map<String, dynamic> asset) {
-    return Container(
-      width: 150,
-      margin: const EdgeInsets.only(left: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              asset['image'] ?? '', // Now directly using 'image'
-              width: 150,
-              height: 150,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 150,
-                  height: 150,
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.broken_image, color: Colors.grey),
-                );
-              },
-            ),
+    return GestureDetector(
+      onTap: () => _showAssetDetailsDialog(asset),
+      child: Container(
+        width: 200,
+        margin: const EdgeInsets.only(left: 16),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: 250, // Increased height to accommodate content
           ),
-          const SizedBox(height: 8),
-          Text(
-            asset['name'] ?? 'Unnamed Asset', // Using 'name'
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, // Use minimum space
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: AspectRatio(
+                  aspectRatio: 1, // Ensure square image
+                  child: Image.network(
+                    asset['image'] ?? '',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 200,
+                        height: 200,
+                        color: Colors.grey.shade200,
+                        child:
+                            const Icon(Icons.broken_image, color: Colors.grey),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                asset['name'] ?? 'Unnamed Asset',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (asset['description'] != null &&
+                  asset['description'].isNotEmpty)
+                Text(
+                  asset['description'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
+  }
+
+// Add this method to the _NftCollectionScreenState class
+  void _showAssetDetailsDialog(Map<String, dynamic> asset) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: constraints.maxWidth * 0.9,
+                constraints: BoxConstraints(
+                  maxHeight: constraints.maxHeight * 0.9,
+                ),
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: CustomScrollView(
+                    slivers: [
+                      SliverAppBar(
+                        pinned: true,
+                        title: Text(
+                          asset['name'] ?? 'Asset Details',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        automaticallyImplyLeading: false,
+                        actions: [
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Image
+                              Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    asset['image'] ?? '',
+                                    width: constraints.maxWidth * 0.7,
+                                    height: constraints.maxWidth * 0.7,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: constraints.maxWidth * 0.7,
+                                        height: constraints.maxWidth * 0.7,
+                                        color: Colors.grey.shade200,
+                                        child: const Icon(Icons.broken_image,
+                                            color: Colors.grey),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // Description
+                              if (asset['description'] != null &&
+                                  asset['description'].isNotEmpty)
+                                _buildSectionTitle(context, 'Description'),
+                              if (asset['description'] != null &&
+                                  asset['description'].isNotEmpty)
+                                Text(
+                                  asset['description'],
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+
+                              const SizedBox(height: 16),
+
+                              // Attributes
+                              if (asset['attributes'] != null &&
+                                  (asset['attributes'] as List).isNotEmpty)
+                                _buildSectionTitle(context, 'Attributes'),
+                              if (asset['attributes'] != null &&
+                                  (asset['attributes'] as List).isNotEmpty)
+                                ..._buildAttributeWidgets(asset['attributes']),
+
+                              // External URL
+                              if (asset['external_url'] != null)
+                                const SizedBox(height: 16),
+                              if (asset['external_url'] != null)
+                                _buildSectionTitle(context, 'External URL'),
+                              if (asset['external_url'] != null)
+                                Text(
+                                  asset['external_url'],
+                                  style: const TextStyle(color: Colors.blue),
+                                ),
+
+                              // Add some bottom padding
+                              const SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+// Helper method for section titles
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+      ),
+    );
+  }
+
+  List<Widget> _buildAttributeWidgets(List attributes) {
+    return attributes
+        .map<Widget>((attr) => Container(
+              margin: const EdgeInsets.symmetric(vertical: 4.0),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        attr['trait_type'] ?? '',
+                        style: const TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        attr['value'] ?? '',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ))
+        .toList();
   }
 
   Widget _buildCollectionDetails() {
