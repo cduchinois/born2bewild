@@ -1,6 +1,5 @@
 .anchor
-.DS_Store
-target
+.DS_Storex
 **/*.rs.bk
 node_modules
 test-ledger
