@@ -36,6 +36,42 @@ pub mod donation_system {
 
         Ok(())
     }
+
+    // 🆕 Add donate logic
+    pub fn donate(ctx: Context<Donate>, amount: u64) -> Result<()> {
+        let donor = &ctx.accounts.donor;
+        let project = &mut ctx.accounts.project;
+
+        require!(amount > 0, DonationError::InvalidDonationAmount);
+
+        // Transfer SOL from donor to project PDA
+        let ix = anchor_lang::solana_program::system_instruction::transfer(
+            &donor.key(),
+            &project.key(),
+            amount,
+        );
+
+        anchor_lang::solana_program::program::invoke(
+            &ix,
+            &[
+                donor.to_account_info(),
+                project.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+        )?;
+
+        // Update project’s current amount
+        project.current_amount = project.current_amount.checked_add(amount).unwrap();
+
+        emit!(DonationMade {
+            donor: donor.key(),
+            project: project.key(),
+            amount,
+            new_total: project.current_amount,
+        });
+
+        Ok(())
+    }
 }
 
 // Event emitted when a new project is created
@@ -47,7 +83,13 @@ pub struct ProjectCreated {
     pub target_amount: u64,
     pub target_animal: String,
 }
-
+#[event]
+pub struct DonationMade {
+    pub donor: Pubkey,
+    pub project: Pubkey,
+    pub amount: u64,
+    pub new_total: u64,
+}
 #[derive(Accounts)]
 #[instruction(
     name: String,
@@ -79,6 +121,16 @@ pub struct CreateProject<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+pub struct Donate<'info> {
+    #[account(mut)]
+    pub donor: Signer<'info>,
+
+    #[account(mut, seeds = [b"project", project.admin.as_ref(), project.name.as_bytes()], bump = project.bump)]
+    pub project: Account<'info, Project>,
+
+    pub system_program: Program<'info, System>,
+}
 #[account]
 pub struct Project {
     pub admin: Pubkey,         // The creator/admin of the project
@@ -88,5 +140,11 @@ pub struct Project {
     pub current_amount: u64,   // Current amount raised in lamports
     pub target_animal: String, // Animal targeted by this project
     pub bump: u8,              // PDA bump seed
+}
+
+#[error_code]
+pub enum DonationError {
+    #[msg("The donation amount must be greater than zero.")]
+    InvalidDonationAmount,
 }
 
