@@ -14,8 +14,16 @@ class ApiService {
     debugPrint('ApiService initialized with URL: $baseUrl');
   }
 
-  Future<Map<String, dynamic>> fetchNftCollection() async {
+  // Assurez-vous que cette méthode est bien définie dans votre ApiService
+// et qu'elle accepte un paramètre nommé "address"
+
+  Future<Map<String, dynamic>> fetchNftCollection({String? address}) async {
     try {
+      // Utiliser l'adresse spécifiée ou celle par défaut
+      final ownerAddress =
+          address ?? 'bosq5LCREmQ4aiSwzYdvD7N1thoASZzHVqvCA1D2Cg5';
+      debugPrint('Fetching NFT Collection for address: $ownerAddress');
+
       final url = Uri.parse('$baseUrl/fetch-nft-collection');
       debugPrint('Fetching NFT Collection from: $url');
 
@@ -23,6 +31,7 @@ class ApiService {
         url,
         headers: {
           'Content-Type': 'application/json',
+          'X-Owner-Address': ownerAddress, // Passer l'adresse dans un en-tête
         },
       ).timeout(
         const Duration(seconds: 10),
@@ -59,7 +68,7 @@ class ApiService {
         "address": "",
         "private_key": null,
         "user_info": {
-          "name": "PawesomeID User",
+          "name": "User",
           "timestamp": DateTime.now().toIso8601String(),
           "device": Platform.operatingSystem,
         }
