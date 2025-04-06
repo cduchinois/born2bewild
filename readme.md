@@ -68,21 +68,24 @@ cp .env.example .env
 # Add your configuration details
 ```
 
-## 📱 Mobile App Setup
+## �� Mobile App Setup
 
+Our mobile application is built with Flutter. For detailed setup instructions, dependencies, and development guidelines, please refer to the [Mobile App README](./mobile/README.md).
+
+Quick start:
 1. Navigate to the mobile app directory
 ```bash
-cd mobile-app
+cd mobile
 ```
 
-2. Install dependencies
+2. Install Flutter dependencies
 ```bash
-npm install
+flutter pub get
 ```
 
-3. Run the development server
+3. Run the app
 ```bash
-npm start
+flutter run
 ```
 
 ## 🔗 Smart Contract Deployment
@@ -97,14 +100,20 @@ anchor build
 anchor deploy
 ```
 
+3. Test Solana Programs
+```bash
+anchor test
+```
+
 ## 👥 Team
 
 Born2BeWild was created during the Paris Blockchain Week Hackathon 2025 by:
 
-- [Your Name] - [Role/Expertise]
-- [Team Member 2] - [Role/Expertise]
-- [Team Member 3] - [Role/Expertise]
-- [Team Member 4] - [Role/Expertise]
+- [Yue] - [Business Expert]
+- [Ilham] - [Smart Contract Expert]
+- [Ty] - [Mobile/Frontend Expert]
+- [Anfal] - [AI/Web3 Expert]
+- [Armando] - [API/Backend Expert]
 
 ## 🎮 Demo
 
