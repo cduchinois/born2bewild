@@ -6,6 +6,7 @@ import '../widgets/nft_card.dart';
 import 'scan_screen.dart';
 import '../screens/nft_collection_screen.dart';
 import '../screens/campaign_screen.dart';
+// import '../screens/nft_screen_test.dart';
 
 class HomeScreen extends StatefulWidget {
   final String walletAddress;
@@ -132,6 +133,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
+                // Feature Cards
+                _buildFeatureCard(
+                  icon: Icons.tab,
+                  title: 'NFT Collection',
+                  description: 'Check your NFT Collection',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            NftCollectionScreen(apiService: widget.apiService),
+                      ),
+                    );
+                  },
+                ),
                 _buildFeatureCard(
                   icon: Icons.security,
                   title: 'Decentralized ID',
@@ -235,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             childAspectRatio: 0.7,
             crossAxisSpacing: 8,

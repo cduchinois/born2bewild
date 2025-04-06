@@ -19,19 +19,20 @@ class ApiService {
 
   Future<Map<String, dynamic>> fetchNftCollection({String? address}) async {
     try {
-      // Utiliser l'adresse spécifiée ou celle par défaut
-      final ownerAddress =
-          address ?? 'bosq5LCREmQ4aiSwzYdvD7N1thoASZzHVqvCA1D2Cg5';
-      debugPrint('Fetching NFT Collection for address: $ownerAddress');
+      // Utiliser l'adresse de collection spécifiée ou celle par défaut
+      final collectionAddress =
+          address ?? '8AbQVR7qVsSbMTCWoAkADqwGBg2UGHEwnngqav69HS1t';
+      debugPrint('Fetching NFT Collection for address: $collectionAddress');
 
-      final url = Uri.parse('$baseUrl/fetch-nft-collection');
+      // Utiliser l'endpoint de collection
+      final url =
+          Uri.parse('$baseUrl/api/fetch-collection?address=$collectionAddress');
       debugPrint('Fetching NFT Collection from: $url');
 
       final response = await http.get(
         url,
         headers: {
           'Content-Type': 'application/json',
-          'X-Owner-Address': ownerAddress, // Passer l'adresse dans un en-tête
         },
       ).timeout(
         const Duration(seconds: 10),
@@ -53,6 +54,91 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('Error fetching NFT collection: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchNftCollectionAssets(
+      {String? address}) async {
+    try {
+      final collectionAddress =
+          address ?? '8AbQVR7qVsSbMTCWoAkADqwGBg2UGHEwnngqav69HS1t';
+      final url = Uri.parse(
+          '$baseUrl/api/fetch-collection-assets?address=$collectionAddress');
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('NFT collection assets fetch timed out');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Parse the response
+        final dynamic parsedResponse = json.decode(response.body);
+
+        // If it's a list of image URLs, transform it
+        if (parsedResponse is List<dynamic>) {
+          return {
+            'total_assets': parsedResponse.length,
+            'assets': parsedResponse
+                .map((imageUrl) => {
+                      'image': imageUrl,
+                      'name': 'Unnamed Asset', // You might want to improve this
+                    })
+                .toList()
+          };
+        }
+
+        // If it's already in the correct format, return it
+        return parsedResponse;
+      } else {
+        throw Exception(
+            'Failed to fetch NFT collection assets: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching NFT collection assets: $e');
+      rethrow;
+    }
+  }
+
+// fetch ONE NFT
+  Future<Map<String, dynamic>> fetchNft({String? mintAddress}) async {
+    try {
+      // Utiliser l'adresse de mint spécifiée ou celle par défaut
+      final nftAddress =
+          mintAddress ?? 'GSfVaRzeGzdtBgF9MWtPQDm6eVP3WvPkyFMa377dUV5R';
+      debugPrint('Fetching NFT for mint address: $nftAddress');
+
+      final url = Uri.parse('$baseUrl/api/fetch-nft?address=$nftAddress');
+      debugPrint('Fetching NFT from: $url');
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('NFT fetch timed out');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> metadata = json.decode(response.body);
+        debugPrint('Parsed NFT metadata: $metadata');
+        return metadata;
+      } else {
+        throw Exception('Failed to fetch NFT: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching NFT: $e');
       rethrow;
     }
   }

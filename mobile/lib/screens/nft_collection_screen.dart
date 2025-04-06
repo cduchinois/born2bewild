@@ -12,30 +12,44 @@ class NftCollectionScreen extends StatefulWidget {
 }
 
 class _NftCollectionScreenState extends State<NftCollectionScreen> {
-  Map<String, dynamic>? _nftCollection;
-  bool _isLoading = false;
+  // Collection data
+  Map<String, dynamic>? _collectionData;
+  List<dynamic>? _collectionAssets;
+
+  // State management
+  bool _isLoading = true;
   String? _errorMessage;
-  final String _ownerAddress = 'bosq5LCREmQ4aiSwzYdvD7N1thoASZzHVqvCA1D2Cg5';
+
+  // Fixed owner address (consider making this dynamic if needed)
+  final String _ownerAddress = '8AbQVR7qVsSbMTCWoAkADqwGBg2UGHEwnngqav69HS1t';
 
   @override
   void initState() {
     super.initState();
-    _fetchNftCollection();
+    _fetchCollectionData();
   }
 
-  Future<void> _fetchNftCollection() async {
+  Future<void> _fetchCollectionData() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      // Adapté pour utiliser le paramètre address défini dans la version mise à jour d'ApiService
-      final nftCollection = await widget.apiService.fetchNftCollection(
+      // Fetch collection metadata
+      final collectionMetadata = await widget.apiService.fetchNftCollection(
         address: _ownerAddress,
       );
+
+      // Fetch collection assets
+      final collectionAssetsResponse =
+          await widget.apiService.fetchNftCollectionAssets(
+        address: _ownerAddress,
+      );
+
       setState(() {
-        _nftCollection = nftCollection;
+        _collectionData = collectionMetadata;
+        _collectionAssets = collectionAssetsResponse['assets'];
         _isLoading = false;
       });
     } catch (e) {
@@ -50,21 +64,40 @@ class _NftCollectionScreenState extends State<NftCollectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KYA: Collection NFT'),
+        title: const Text('NFT Collection'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _fetchNftCollection,
+            onPressed: _fetchCollectionData,
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? _buildErrorView()
-              : _nftCollection != null
-                  ? _buildCollectionView()
-                  : const Center(child: Text('Aucune collection NFT trouvée')),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return _buildErrorView();
+    }
+
+    if (_collectionData == null) {
+      return const Center(child: Text('No collection found'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: _fetchCollectionData,
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildCollectionHeader()),
+          SliverToBoxAdapter(child: _buildAssetsSection()),
+          SliverToBoxAdapter(child: _buildCollectionDetails()),
+        ],
+      ),
     );
   }
 
@@ -80,311 +113,213 @@ class _NftCollectionScreenState extends State<NftCollectionScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Erreur:',
+            'Error',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Text(
-              _errorMessage ?? 'Une erreur inconnue est survenue',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red),
-            ),
+          Text(
+            _errorMessage ?? 'An unknown error occurred',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.red),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: _fetchNftCollection,
+            onPressed: _fetchCollectionData,
             icon: const Icon(Icons.refresh),
-            label: const Text('Réessayer'),
+            label: const Text('Try Again'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCollectionView() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // En-tête de la collection
-        _buildCollectionHeader(),
-
-        const Divider(height: 32),
-
-        // Détails de la collection
-        Text(
-          'Détails de la collection',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 16),
-
-        // Afficher les attributs organisés par catégories
-        ..._buildOrganizedCollectionDetails(),
-      ],
-    );
-  }
-
   Widget _buildCollectionHeader() {
-    final name = _nftCollection?['name'] ?? 'Collection sans nom';
-    final description =
-        _nftCollection?['description'] ?? 'Aucune description disponible';
-    final image = _nftCollection?['image'];
+    final name = _collectionData?['name'] ?? 'Unnamed Collection';
+    final description = _collectionData?['description'] ?? 'No description';
+    final image = _collectionData?['image'];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Adresse du propriétaire
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.green.shade100,
-            borderRadius: BorderRadius.circular(20),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Owner Address Chip
+          Chip(
+            avatar: const Icon(Icons.account_balance_wallet, size: 16),
+            label: Text(_shortenAddress(_ownerAddress)),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+          const SizedBox(height: 16),
+
+          // Collection Details
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.account_balance_wallet,
-                  size: 16, color: Colors.green),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  'Propriétaire: ${_shortenAddress(_ownerAddress)}',
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontWeight: FontWeight.bold,
-                  ),
+              // Collection Image
+              _buildCollectionImage(image),
+              const SizedBox(width: 16),
+
+              // Collection Text Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollectionImage(String? imageUrl) {
+    if (imageUrl == null) {
+      return Container(
+        width: 120,
+        height: 120,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
         ),
+        child: const Icon(Icons.image, color: Colors.grey),
+      );
+    }
 
-        const SizedBox(height: 16),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.network(
+        imageUrl,
+        width: 120,
+        height: 120,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 120,
+            height: 120,
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.broken_image, color: Colors.grey),
+          );
+        },
+      ),
+    );
+  }
 
-        // Image et titre
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image de la collection
-            if (image != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  image,
-                  width: 120,
-                  height: 120,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 120,
-                      height: 120,
-                      color: Colors.grey.shade200,
-                      child: const Icon(Icons.broken_image,
-                          size: 40, color: Colors.grey),
-                    );
-                  },
-                ),
-              )
-            else
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.image, size: 40, color: Colors.grey),
-              ),
+  Widget _buildAssetsSection() {
+    if (_collectionAssets == null || _collectionAssets!.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text('No assets in this collection'),
+      );
+    }
 
-            const SizedBox(width: 16),
-
-            // Titre et description
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(
+            'Collection Assets',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+        SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _collectionAssets!.length,
+            itemBuilder: (context, index) {
+              final asset = _collectionAssets![index];
+              return _buildAssetCard(asset);
+            },
+          ),
         ),
       ],
     );
   }
 
-  List<Widget> _buildOrganizedCollectionDetails() {
-    if (_nftCollection == null) return [];
-
-    final basicInfo = {
-      'symbol': 'Symbole',
-      'seller_fee_basis_points': 'Frais du vendeur',
-      'external_url': 'URL externe',
-    };
-
-    final attributes = _nftCollection?['attributes'] as List<dynamic>? ?? [];
-
-    List<Widget> widgets = [];
-
-    // Information de base
-    widgets.add(_buildCategorySection('Informations de base', basicInfo));
-
-    // Attributs
-    if (attributes.isNotEmpty) {
-      widgets.add(const SizedBox(height: 20));
-      widgets.add(
-        Text(
-          'Attributs',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-      );
-      widgets.add(const SizedBox(height: 8));
-
-      for (var attribute in attributes) {
-        final traitType = attribute['trait_type'] ?? 'Non spécifié';
-        final value = attribute['value']?.toString() ?? 'N/A';
-
-        widgets.add(
-          Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      traitType,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(value),
-                  ),
-                ],
-              ),
+  Widget _buildAssetCard(Map<String, dynamic> asset) {
+    return Container(
+      width: 150,
+      margin: const EdgeInsets.only(left: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              asset['image'] ?? '', // Now directly using 'image'
+              width: 150,
+              height: 150,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 150,
+                  height: 150,
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                );
+              },
             ),
           ),
-        );
-      }
-    }
-
-    // Autres données
-    final otherData = Map<String, dynamic>.from(_nftCollection!)
-      ..removeWhere((key, value) =>
-          basicInfo.containsKey(key) ||
-          ['name', 'description', 'image', 'attributes'].contains(key));
-
-    if (otherData.isNotEmpty) {
-      widgets.add(const SizedBox(height: 20));
-      widgets.add(
-        Text(
-          'Autres informations',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-      );
-      widgets.add(const SizedBox(height: 8));
-
-      for (var entry in otherData.entries) {
-        widgets.add(
-          Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry.key,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatValue(entry.value),
-                    style: const TextStyle(
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          const SizedBox(height: 8),
+          Text(
+            asset['name'] ?? 'Unnamed Asset', // Using 'name'
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        );
-      }
-    }
-
-    return widgets;
-  }
-
-  Widget _buildCategorySection(String title, Map<String, String> fields) {
-    List<Widget> items = [];
-
-    items.add(
-      Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+        ],
       ),
     );
-    items.add(const SizedBox(height: 8));
+  }
 
-    for (var entry in fields.entries) {
-      if (_nftCollection?.containsKey(entry.key) ?? false) {
-        items.add(
-          Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      entry.value,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(_formatValue(_nftCollection![entry.key])),
-                  ),
-                ],
-              ),
-            ),
+  Widget _buildCollectionDetails() {
+    if (_collectionData == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Collection Details',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-        );
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: items,
+          const SizedBox(height: 16),
+          ..._buildDetailCards(),
+        ],
+      ),
     );
+  }
+
+  List<Widget> _buildDetailCards() {
+    final detailsToShow = {
+      'symbol': 'Symbol',
+      'seller_fee_basis_points': 'Seller Fee',
+      'external_url': 'External URL',
+    };
+
+    return detailsToShow.entries.map((entry) {
+      final value = _collectionData?[entry.key];
+      if (value == null) return const SizedBox.shrink();
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: ListTile(
+          title: Text(entry.value),
+          subtitle: Text(_formatValue(value)),
+        ),
+      );
+    }).toList();
   }
 
   String _formatValue(dynamic value) {

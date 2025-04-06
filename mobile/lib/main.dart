@@ -13,7 +13,7 @@ class WildApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Initialize ApiService with base URL
-    final apiService = ApiService(baseUrl: 'http://10.0.2.2:3000');
+    final apiService = ApiService(baseUrl: 'http://172.17.0.209:3000');
 
     return MaterialApp(
       title: 'WILD Sol',
