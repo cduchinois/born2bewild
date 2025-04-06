@@ -11,10 +11,10 @@ born_2bewild = "HhkSJ9aaJhHSkPfxDk29Mrzx2SNkf8Z6Sm8ZbQRMBKTq"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
-# Point to the running local validator
-endpoint = "http://127.0.0.1:8899"
+# Point to the running local validator #"http://127.0.0.1:8899"
+#endpoint = "https://api.devnet.solana.com"
 
 [scripts]
-test = "ANCHOR_PROVIDER_URL='http://127.0.0.1:8899' yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
