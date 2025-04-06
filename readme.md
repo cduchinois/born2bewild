@@ -24,23 +24,25 @@ Born2BeWild is an innovative blockchain-based solution for tracking and managing
 
 ## 🔧 Technical Stack
 
-### Blockchain Components
+### Blockchain Components 
 - Solana blockchain network
 - Anchor framework for smart contract development
 - NFT implementation for animal tracking
-- WILD token smart contract
+- Donation plateform with $WILD token for donators
+[src](https://github.com/cduchinois/born2bewild/tree/main/api/born2bewild/programs/born2bewild)
 
 ### Mobile Application
 - Cross-platform mobile application
 - AI recognition integration
 - Secure authentication system
 - Real-time data synchronization
+[src](https://github.com/cduchinois/born2bewild/tree/main/mobile)
 
 ### Backend Services
 - API services for animal tracking
 - Integration with blockchain network
 - Data management system
-- Security protocols
+[src](https://github.com/cduchinois/born2bewild/tree/main/api/typescript-server-app)
 
 ## 🚀 Getting Started
 
