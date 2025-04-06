@@ -10,7 +10,9 @@ export function setRoutes(app: Router) {
     app.get('/api/fetch-nft', indexController.fetchNFT.bind(indexController));
     app.get('/api/fetch-collection', indexController.fetchNftCollection.bind(indexController));
     app.get('/api/fetch-collection-assets', indexController.fetchNftCollectionAssets.bind(indexController));
-
+    app.get('/', (req, res) => {
+        res.send('Welcome to the Wild SOL Server App API!');
+    });
 }
 
 export default router;
