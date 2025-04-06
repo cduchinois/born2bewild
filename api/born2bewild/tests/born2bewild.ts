@@ -2,7 +2,11 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Born2bewild } from "../target/types/born2bewild";
 import { Keypair, PublicKey, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from "@solana/spl-token";
+import { 
+  TOKEN_PROGRAM_ID, 
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddress, 
+} from "@solana/spl-token";
 import { assert } from "chai";
 import { Transaction } from "@solana/web3.js";
 
@@ -25,6 +29,7 @@ describe("born2bewild", () => {
   // Test accounts
   let donor: Keypair;
   let projectCreator: Keypair;
+  let wildTokenMint2: Keypair;
 
   const PLATFORM_NAME = "Born2BeWild v1";
   const PROJECT_NAME = "Save the Tigers";
@@ -37,6 +42,7 @@ describe("born2bewild", () => {
     // Generate test accounts
     donor = anchor.web3.Keypair.generate();
     projectCreator = anchor.web3.Keypair.generate();
+    wildTokenMint2 = anchor.web3.Keypair.generate();
 
     // Airdrop SOL to test accounts
     await provider.connection.confirmTransaction(
@@ -80,11 +86,12 @@ describe("born2bewild", () => {
       .accounts({
         admin: admin.publicKey,
         born2bewild: born2bewildPDA,
-        wildTokenMint: wildTokenMint,
+        wildTokenMint: wildTokenMint2.publicKey,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       })
+      .signers([wildTokenMint2])
       .rpc();
     
     console.log("Platform initialized:", tx);
@@ -96,7 +103,7 @@ describe("born2bewild", () => {
     assert.ok(platformConfig.wildTokenMint);
   });
 
-  /*it("Creates a donation project", async () => {
+  it("Creates a donation project", async () => {
     const tx = await program.methods
       .createDonationProject(
         PROJECT_NAME,
@@ -126,21 +133,11 @@ describe("born2bewild", () => {
   });
 
   it("Allows donations and mints WILD tokens", async () => {
-    // Get the donor's WILD token account
+    // Get the donor's WILD token account address (for verification)
     const donorWildAccount = await getAssociatedTokenAddress(
       wildTokenMint,
       donor.publicKey
     );
-
-    // Create the associated token account if it doesn't exist
-    const createAtaIx = await createAssociatedTokenAccountInstruction(
-      donor.publicKey,
-      donorWildAccount,
-      donor.publicKey,
-      wildTokenMint
-    );
-    const tx = await provider.sendAndConfirm(new Transaction().add(createAtaIx), [donor]);
-    console.log("Created donor's token account:", tx);
 
     // Record initial balances
     const donorInitialBalance = await provider.connection.getBalance(donor.publicKey);
@@ -148,20 +145,23 @@ describe("born2bewild", () => {
     
     const donationAmount = new anchor.BN(0.5 * LAMPORTS_PER_SOL); // 0.5 SOL
 
-    const tx2 = await program.methods
+    const tx = await program.methods
       .donate(PROJECT_NAME, donationAmount)
       .accounts({
         donor: donor.publicKey,
+        platform: born2bewildPDA,
         wildTokenMint: wildTokenMint,
         wildTokenAccount: donorWildAccount,
         project: projectPDA,
         treasury: treasuryPDA,
-        platform: born2bewildPDA,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .signers([donor])
       .rpc();
 
-    console.log("Donation processed:", tx2);
+    console.log("Donation processed:", tx);
 
     // Verify balances after donation
     const donorFinalBalance = await provider.connection.getBalance(donor.publicKey);
@@ -237,5 +237,5 @@ describe("born2bewild", () => {
       new anchor.BN(0.4 * LAMPORTS_PER_SOL).toString(), // 0.5 - 0.1 SOL
       "Project total donations not updated correctly after withdrawal"
     );
-  });*/
+  });
 });

@@ -1,10 +1,7 @@
 use anchor_lang::{prelude::*, system_program::{Transfer, transfer}};
-use anchor_spl::token_interface::{
-    Mint,
-    TokenInterface,
-    TokenAccount,
-    mint_to,
-    MintTo
+use anchor_spl::{
+    token_interface::{Mint, TokenInterface, TokenAccount, mint_to, MintTo},
+    associated_token::AssociatedToken,
 };
 
 use crate::errors::*;
@@ -26,7 +23,12 @@ pub struct Donate<'info> {
     #[account(mut)]
     pub wild_token_mint: InterfaceAccount<'info, Mint>,
 
-    #[account(mut)]
+    #[account(
+        init_if_needed,
+        payer = donor,
+        associated_token::mint = wild_token_mint,
+        associated_token::authority = donor
+    )]
     pub wild_token_account: InterfaceAccount<'info, TokenAccount>,
     
     #[account(
@@ -43,6 +45,7 @@ pub struct Donate<'info> {
     
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 impl<'info> Donate<'info> {

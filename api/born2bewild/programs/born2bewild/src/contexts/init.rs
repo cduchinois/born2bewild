@@ -26,9 +26,7 @@ pub struct Initialize<'info> {
         payer = admin,
         mint::decimals = 9,
         mint::authority = born2bewild,
-        mint::freeze_authority = born2bewild,
-        seeds = [b"wild_token", name.as_bytes()],
-        bump
+        mint::freeze_authority = born2bewild
     )]
     pub wild_token_mint: Account<'info, Mint>,
 
