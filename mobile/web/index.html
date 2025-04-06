@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="born2bewild">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Privy Web Auth Demo</title>
+  <link rel="manifest" href="manifest.json">
+
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    var serviceWorkerVersion = null;
+  </script>
+  
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+  <script>
+    // Global variables to help with JS-Dart communication
+    window.privyInitialized = false;
+    window.privyUser = null;
+    
+    window.addEventListener('load', function(ev) {
+      // Define a global function to check if Privy is loaded
+      window.isPrivyLoaded = function() {
+        return typeof window.privy !== 'undefined';
+      };
+      
+      // Download main.dart.js
+      _flutter.loader.load({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        }
+      });
+    });
+  </script>
+  
+  <script>
+    // Add a helper to detect when privy.js is loaded
+    function checkPrivyLoaded() {
+      if (window.isPrivyLoaded && window.isPrivyLoaded()) {
+        window.privyInitialized = true;
+        console.log("Privy SDK detected and ready to use");
+        clearInterval(privyCheckInterval);
+      }
+    }
+    
+    // Check periodically if Privy is loaded
+    var privyCheckInterval = setInterval(checkPrivyLoaded, 500);
+  </script>
+</body>
+</html>
