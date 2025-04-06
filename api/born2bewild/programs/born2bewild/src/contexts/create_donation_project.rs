@@ -1,15 +1,18 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    token_interface::{TokenAccount, Mint, TokenInterface}, 
-    metadata::{Metadata, MetadataAccount, MasterEditionAccount}, 
-    associated_token::AssociatedToken
-};
 
-use crate::state::{DonationProject, ConfigError};
+use crate::errors::*;
+use crate::state::{Config, DonationProject};
 
 #[derive(Accounts)]
-#[instruction(name: String, description: String, wild_token_mint: Pubkey, location: String, target_amount: u64, target_animal: String)]
+#[instruction(name: String, description: String, location: String, target_amount: u64, target_animal: String)]
 pub struct CreateProject<'info> {
+    // Platform config that holds the universal WILD mint
+    #[account(
+        seeds = [b"born2bewild", platform.name.as_str().as_bytes()],
+        bump
+    )]
+    pub platform: Account<'info, Config>,
+
     #[account(
         init,
         payer = creator,
@@ -32,7 +35,7 @@ pub struct CreateProject<'info> {
 }
 
 impl<'info> CreateProject<'info> {
-    pub fn create_project(&mut self, name: String, description: String, wild_token_mint: Pubkey, location: String, target_amount: u64, target_animal: String) -> Result<()> {
+    pub fn create_project(&mut self, name: String, description: String, location: String, target_amount: u64, target_animal: String, bumps: &CreateProjectBumps) -> Result<()> {
         require!(name.len() > 0 && name.len() < 33, ConfigError::NameTooLong);
         self.project.set_inner(DonationProject {
             creator: self.creator.key(),
@@ -41,9 +44,9 @@ impl<'info> CreateProject<'info> {
             location,
             target_amount,
             target_animal, // TODO: add animal metadata / id 
-            wild_token_mint,
             total_donation: 0,
-            treasury_bump: self.treasury.key().bump,
+            project_bump: bumps.project,
+            treasury_bump: bumps.treasury,
         });
 
         Ok(())

@@ -1,6 +1,6 @@
 //init born2bewild plateform
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{TokenInterface, Mint};
+use anchor_spl::token::{Token, Mint};
 
 use crate::state::Config;
 use crate::errors::ConfigError;
@@ -9,16 +9,16 @@ use crate::errors::ConfigError;
 #[instruction(name: String)]
 pub struct Initialize<'info> {
     #[account(mut)]
-    admin: Signer<'info>,
+    pub admin: Signer<'info>,
 
     #[account(
         init,
-        space = Config::INIT_SPACE,
         payer = admin,
-        seeds = [b"born2bewild", name.as_str().as_bytes()],
+        space = Config::INIT_SPACE,
+        seeds = [b"born2bewild", name.as_bytes()],
         bump
     )]
-    born2bewild: Account<'info, Config>,
+    pub born2bewild: Account<'info, Config>,
 
     // Initialize the WILD token mint with the platform PDA as authority
     #[account(
@@ -27,12 +27,14 @@ pub struct Initialize<'info> {
         mint::decimals = 9,
         mint::authority = born2bewild,
         mint::freeze_authority = born2bewild,
+        seeds = [b"wild_token", name.as_bytes()],
+        bump
     )]
-    wild_token_mint: Account<'info, Mint>,
+    pub wild_token_mint: Account<'info, Mint>,
 
-    system_program: Program<'info, System>,
-    token_program: Interface<'info, TokenInterface>,
-    rent: Sysvar<'info, Rent>,
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    pub rent: Sysvar<'info, Rent>,
 }
 
 impl<'info> Initialize<'info> {
@@ -48,4 +50,13 @@ impl<'info> Initialize<'info> {
 
         Ok(())
     }
+
+    /*pub fn init_wild_token(&mut self, bumps: &InitializeBumps) -> Result<()> {
+        let platform_seeds = &[
+            b"born2bewild",
+            self.platform.name.as_str().as_bytes(),
+            &[self.platform.bump]
+        ];
+        let signer = &[&platform_seeds[..]];
+    }*/
 }

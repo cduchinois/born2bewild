@@ -1,15 +1,19 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    token_interface::{TokenAccount, Mint, TokenInterface, MintTo}, 
-    metadata::{Metadata, MetadataAccount, MasterEditionAccount}, 
-    associated_token::AssociatedToken
-};
+use anchor_lang::solana_program::system_instruction;
 
-use crate::state::{DonationError, Config};
+use crate::errors::*;
+use crate::state::{Config, DonationProject};
 
 #[derive(Accounts)]
 #[instruction(project_name: String, amount: u64)]
 pub struct Withdraw<'info> {
+    // Platform config that holds the universal WILD mint
+    #[account(
+        seeds = [b"born2bewild", platform.name.as_str().as_bytes()],
+        bump
+    )]
+    pub platform: Account<'info, Config>,
+
     #[account(
         seeds = [b"project", project_name.as_str().as_bytes()],
         bump
@@ -37,12 +41,12 @@ impl<'info> Withdraw<'info> {
 
         //check if the recipient is the creator of the project
         if self.recipient.key() != self.project.creator {
-            return Err(DonationError::Unauthorized.into());
+            return Err(DonationProjectError::UnauthorizedWithdrawal.into());
         }
 
         //check if the amount is greater than the total donations
-        if amount > self.project.total_donations {
-            return Err(DonationError::InsufficientFunds.into());
+        if amount > self.project.total_donation {
+            return Err(DonationProjectError::InsufficientFunds.into());
         }
 
         // Create the transfer instruction
@@ -64,7 +68,7 @@ impl<'info> Withdraw<'info> {
         )?;
 
         //update the project total donations
-        self.project.total_donations -= amount;
+        self.project.total_donation -= amount;
         Ok(())
     }
 }
