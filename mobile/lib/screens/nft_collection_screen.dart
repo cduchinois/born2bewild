@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../services/api_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NftCollectionScreen extends StatefulWidget {
   final ApiService apiService;
@@ -23,6 +24,10 @@ class _NftCollectionScreenState extends State<NftCollectionScreen> {
 
   // Fixed owner address
   final String _ownerAddress = '8AbQVR7qVsSbMTCWoAkADqwGBg2UGHEwnngqav69HS1t';
+
+  // Fixed token address for Solscan link
+  final String _solscanBaseUrl =
+      'https://solscan.io/token/69zN7W2JBDKyF8Et2nUUeZH9NzwaLoepGtihNMFV1HRs?cluster=devnet';
 
   @override
   void initState() {
@@ -258,7 +263,7 @@ class _NftCollectionScreenState extends State<NftCollectionScreen> {
           ),
         ),
         SizedBox(
-          height: 250,
+          height: 280, // Increased height to accommodate the link
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: _collectionAssets.length,
@@ -311,10 +316,44 @@ class _NftCollectionScreenState extends State<NftCollectionScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.grey),
               ),
+            // Add Solscan link
+            InkWell(
+              onTap: () => _launchSolscanUrl(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  children: const [
+                    Icon(Icons.open_in_new, size: 14, color: Colors.blue),
+                    SizedBox(width: 4),
+                    Text(
+                      'View on Solscan',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _launchSolscanUrl() async {
+    final Uri url = Uri.parse(_solscanBaseUrl);
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not open Solscan: $e')),
+      );
+    }
   }
 
   void _showAssetDetailsDialog(Map<String, dynamic> asset) {
@@ -368,6 +407,28 @@ class _NftCollectionScreenState extends State<NftCollectionScreen> {
                                   color: Colors.grey),
                             );
                           },
+                        ),
+                      ),
+                    ),
+
+                    // Solscan Link
+                    _buildSectionHeader('Token Info'),
+                    InkWell(
+                      onTap: () => _launchSolscanUrl(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.open_in_new, color: Colors.blue),
+                            SizedBox(width: 8),
+                            Text(
+                              'View on Solscan',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
