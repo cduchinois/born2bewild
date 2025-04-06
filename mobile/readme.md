@@ -111,37 +111,9 @@ flutter run -d <device-id>
 - Check Xcode console for specific errors
 - Verify provisioning profiles and certificates
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch 
-   ```bash
-   git checkout -b feature/AmazingFeature
-   ```
-3. Commit your changes 
-   ```bash
-   git commit -m 'Add some AmazingFeature'
-   ```
-4. Push to the branch 
-   ```bash
-   git push origin feature/AmazingFeature
-   ```
-5. Open a Pull Request
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## 📞 Contact
-
-**Your Name** - [your.email@example.com]
-
-**Project Link**: [https://github.com/yourusername/wild-sol](https://github.com/yourusername/wild-sol)
 
 ## 🙏 Acknowledgements
 
 - [Flutter](https://flutter.dev/)
 - [Solana](https://solana.com/)
 - [Phantom Wallet](https://phantom.app/)
-
-
