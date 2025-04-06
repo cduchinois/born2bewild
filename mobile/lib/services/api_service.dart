@@ -293,7 +293,7 @@ class ApiService {
         name: "Bengal Tiger #A2451",
         description: "Protected Bengal Tiger in Ranthambore National Park",
         imageUrl:
-            "https://images.unsplash.com/photo-1549366021-9f761d450615?q=80&w=1000&auto=format&fit=crop",
+            "https://bigcatsindia.com/wp-content/uploads/2018/06/Royal-Bengal-Tiger.jpg?q=80&w=1000&auto=format&fit=crop",
         externalUrl: "https://wildsol.com",
         attributes: [
           NFTAttribute(traitType: "issuerID", value: "wlf-ind-045"),
