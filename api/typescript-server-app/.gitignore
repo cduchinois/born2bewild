@@ -1,0 +1,7 @@
+# dotenv environment variables file
+.env
+node_modules
+keypair.json
+dist
+.vercel
+package-lock.json
