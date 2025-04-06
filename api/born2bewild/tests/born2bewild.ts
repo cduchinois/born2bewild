@@ -10,6 +10,9 @@ import {
 import { assert } from "chai";
 import { Transaction } from "@solana/web3.js";
 
+// Token Interface Program ID (different from regular Token Program)
+const TOKEN_INTERFACE_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+
 describe("born2bewild", () => {
   // Configure the client to use the local cluster
   const provider = anchor.AnchorProvider.env();
@@ -20,7 +23,7 @@ describe("born2bewild", () => {
 
   // Platform PDAs
   let born2bewildPDA: PublicKey;
-  let wildTokenMint: PublicKey;
+  //let wildTokenMint: PublicKey;
 
   // Project data
   let projectPDA: PublicKey;
@@ -31,8 +34,8 @@ describe("born2bewild", () => {
   let projectCreator: Keypair;
   let wildTokenMint2: Keypair;
 
-  const PLATFORM_NAME = "Born2BeWild v1";
-  const PROJECT_NAME = "Save the Tigers";
+  const PLATFORM_NAME = "Born2BeWild v7";
+  const PROJECT_NAME = "Save the Tigers 7";
   const PROJECT_DESC = "Help us protect tigers in Asia";
   const PROJECT_LOCATION = "Asia";
   const PROJECT_TARGET_AMOUNT = new anchor.BN(10 * LAMPORTS_PER_SOL); // 10 SOL
@@ -42,7 +45,7 @@ describe("born2bewild", () => {
     // Generate test accounts
     donor = anchor.web3.Keypair.generate();
     projectCreator = anchor.web3.Keypair.generate();
-    wildTokenMint2 = anchor.web3.Keypair.generate();
+    wildTokenMint2 = anchor.web3.Keypair.generate(); //fromSecretKey(Uint8Array.from([45, 94, 64, 60, 41, 8, 198, 251, 2, 254, 209, 95, 160, 176, 176, 109, 92, 133, 103, 70, 174, 105, 46, 120, 144, 210, 82, 118, 226, 145, 96, 243, 60, 43, 15, 133, 241, 254, 239, 101, 106, 184, 179, 29, 51, 96, 31, 232, 151, 201, 238, 195, 177, 62, 56, 55, 132, 28, 38, 43, 230, 180, 52, 105]));
 
     // Airdrop SOL to test accounts
     await provider.connection.confirmTransaction(
@@ -60,11 +63,11 @@ describe("born2bewild", () => {
     console.log("Platform PDA:", born2bewildPDA.toBase58());
 
     // Derive WILD token mint PDA
-    [wildTokenMint] = await PublicKey.findProgramAddressSync(
-      [Buffer.from("wild_token"), Buffer.from(PLATFORM_NAME)],
-      program.programId
-    );
-    console.log("WILD Token Mint:", wildTokenMint.toBase58());
+    //[wildTokenMint] = await PublicKey.findProgramAddressSync(
+    //  [Buffer.from("wild_token"), Buffer.from(PLATFORM_NAME)],
+    //  program.programId
+    //);
+    //console.log("WILD Token Mint:", wildTokenMint.toBase58());
 
     // Derive project PDAs
     [projectPDA] = await PublicKey.findProgramAddressSync(
@@ -133,9 +136,9 @@ describe("born2bewild", () => {
   });
 
   it("Allows donations and mints WILD tokens", async () => {
-    // Get the donor's WILD token account address (for verification)
+    // Get the donor's WILD token account
     const donorWildAccount = await getAssociatedTokenAddress(
-      wildTokenMint,
+      wildTokenMint2.publicKey,
       donor.publicKey
     );
 
@@ -149,14 +152,14 @@ describe("born2bewild", () => {
       .donate(PROJECT_NAME, donationAmount)
       .accounts({
         donor: donor.publicKey,
-        platform: born2bewildPDA,
-        wildTokenMint: wildTokenMint,
+        wildTokenMint: wildTokenMint2.publicKey,
         wildTokenAccount: donorWildAccount,
         project: projectPDA,
         treasury: treasuryPDA,
-        tokenProgram: TOKEN_PROGRAM_ID,
+        platform: born2bewildPDA,
+        tokenProgram: TOKEN_INTERFACE_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        associated_token_program: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .signers([donor])
       .rpc();
@@ -207,7 +210,10 @@ describe("born2bewild", () => {
         project: projectPDA,
         treasury: treasuryPDA,
         platform: born2bewildPDA,
-        recipient: projectCreator.publicKey
+        recipient: projectCreator.publicKey,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .signers([projectCreator])
       .rpc();
